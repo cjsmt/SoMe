@@ -1,262 +1,112 @@
-<div align="center">
-<img src="https://github.com/LivXue/SoMe/blob/main/pics/logo.png" alt="SoMe Benchmark Logo" width="33%">
-</div>
+# FTEC5660 Reproducibility Report (English)
 
-# 🤖 SoMe: A Realistic Benchmark for LLM-based Social Media Agents
+## 0. Basic Information
 
-<div align="center" style="line-height: 1.5;">
-
-[![GITHUB](https://img.shields.io/badge/Github-24292F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LivXue/SoMe)
-[![Dataset](https://img.shields.io/badge/Dataset-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/datasets/LivXue/SoMe)
-[![Paper](https://img.shields.io/badge/Paper-red?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/pdf/2512.14720)
-
-</div>
+- Course: FTEC5660 Agentic AI for Business and FinTech
+- Name: ZHANG Xianglong
+- SID: 1155241554
+- Project Repo: `https://github.com/LivXue/SoMe`
+- Paper: *SoMe: A Realistic Benchmark for LLM-based Social Media Agents* (arXiv:2512.14720)
+- Reproduction Target: MID ACC (Table 3-related metric) + one controlled modification
 
 ---
 
-## 📋 Overview
+## 1. Project Summary
 
-SoMe is a comprehensive benchmark designed to evaluate the capabilities of Large Language Model (LLM)-based agents in realistic social media scenarios. This benchmark provides a standardized framework for testing and comparing social media agents across multiple dimensions of performance.
-
-SoMe comprises a diverse collection of:
-- **8 social media agent tasks**
-- **9,164,284 posts** from various social media platforms
-- **6,591 user profiles** with rich behavioral data
-- **25,686 reports** from external websites
-- **17,869 meticulously annotated task queries**
-
-![SoMe Benchmark Overview](https://github.com/LivXue/SoMe/blob/main/pics/framework.png)
-
-*Figure 1: An example of agentic task in SoMe*
+This report reproduces the MID (Misinformation Detection) subtask in SoMe.  
+Under limited time/compute budget, I run a reproducible 200-sample subset pipeline and then conduct one isolated modification plus multi-model extensions.
 
 ---
 
-## 📰 News
+## 2. Setup Notes
 
-- **[2026.01]** 📧 **We release [MailMind: An AI-powered Email System that Can Do Your Job](https://github.com/LivXue/open-email-agent)**
-- **[2025.11]** 🎉 Our paper is accepted by AAAI 2026!
-
----
-
-## ✨ Features
-
-SoMe benchmark evaluates social media agents across 8 key tasks, covering diverse aspects of social media intelligence:
-
-| Task Category | Task Name | Description |
-|---------------|-----------|-------------|
-| **Post-centered** | 🚨 Realtime Event Detection (RED) | Identify and track emerging events in real-time |
-| **Post-centered** | 📊 Streaming Event Summary (SES) | Summarize ongoing events from streaming data |
-| **Post-centered** | 🚫 Misinformation Detection (MID) | Identify and flag potentially false or misleading information |
-| **User-centered** | 🎯 User Behavior Prediction (UBP) | Predict user interactions with social media content |
-| **User-centered** | 😊 User Emotion Analysis (UEA) | Analyze user emotions towards social media content |
-| **User-centered** | 💬 User Comment Simulation (UCS) | Simulate realistic user comments |
-| **Comprehensive** | 📱 Media Content Recommendation (MCR) | Recommend relevant media content based on user interests |
-| **Comprehensive** | ❓ Social Media Question-Answering (SMQ) | Accurately answer questions about social media content |
+- OS: macOS (darwin 23.6.0)
+- Python: 3.12 (conda env: `py312`)
+- Hardware: local machine without NVIDIA GPU (CPU/MPS mode)
+- API endpoint: OpenAI-compatible (`https://aihubmix.com/v1`)
+- Models used: `gpt-4o-mini`, `gemini-2.5-flash`, `kimi-k2-instruct`
+- Key packages: `openai`, `sentence-transformers`, `torch`, `tqdm`, `json5`, `python-dotenv`
 
 ---
 
-## 📈 Dataset Statistics
+## 3. Reproduction Target and Metric
 
-The SoMe benchmark includes comprehensive datasets for each task, with the following statistics:
-
-| Task | # Query | # Data | Data Type |
-|------|---------|--------|-----------|
-| 🚨 Real-time Event Detection | 568 | 476,611 | Posts |
-| 📊 Streaming Event Summary | 154 | 7,898,959 | Posts |
-| 🚫 Misinformation Detection | 1,451 | 27,137 | Posts & Knowledge |
-| 🎯 User Behavior Prediction | 3,000 | 840,200 | Posts & Users |
-| 😊 User Emotion Analysis | 2,696 | 840,200 | Posts & Users |
-| 💬 User Comment Simulation | 4,000 | 840,200 | Posts & Users |
-| 📱 Media Content Recommendation | 4,000 | 840,200 | Posts & Users |
-| ❓ Social Media Question-Answering | 2,000 | 8,651,759 | Posts & Users |
-| **Total** | **17,869** | **9,242,907** | **All** |
+- Target claim: MID performance reported in Table 3.
+- Metric: ACC after answer extraction (`MID_extraction.py`) and score computation (`MID_compute_score.py`).
 
 ---
 
-## 🏆 Evaluation Results
+## 4. Reproduction Workflow
 
-We evaluated various agentic LLMs on the SoMe benchmark. Below are the comprehensive evaluation results across all 8 tasks:
-
-![SoMe Benchmark Results](https://github.com/LivXue/SoMe/blob/main/pics/result.png)
-
-*Figure 2: Performance comparison of different agentic models across SoMe benchmark tasks*
-
----
-
-## 📁 Project Structure
-
-```
-Social-Media-Agent/
-├── 🤖 agent.py                    # Main social media agent implementation
-├── 🔧 qwen_agent/                 # Qwen-Agent library
-├── 📋 tasks/                      # Task-specific modules
-│   ├── 📱 media_content_recommend/
-│   ├── 🚫 misinformation_detection/
-│   ├── 🚨 realtime_event_detection/
-│   ├── ❓ social_media_question_answering/
-│   ├── 📊 streaming_event_summary/
-│   ├── 💬 user_comment_simulation/
-│   ├── 😊 user_emotion_analysis/
-│   └── 🎯 user_behavior_prediction/
-├── 🛠️ tools/                      # Tools for social media analysis
-├── 🧪 test_*.py                   # Test scripts for each task
-├── 📊 eval_scripts/               # Evaluation scripts for scoring
-├── 📂 results/                    # Directory for storing results
-├── 📊 datasets/                   # Dataset directory
-└── 💾 database/                   # Database directory
-```
+1. Fix environment/dependency issues for macOS.
+2. Fix runnability blockers in repo code (imports, argparse, eval scripts).
+3. Run baseline inference on 200 MID samples.
+4. Run extraction + scoring to get baseline ACC.
+5. Apply one isolated modification (`retrieval_topk=5`) and rerun.
+6. Repeat under the same 200-sample setting for Gemini and Kimi.
 
 ---
 
-## 🚀 Installation
+## 5. Modification
 
-### Prerequisites
-- Python 3.12+ installed on your system
-- Git installed for repository cloning
-- Sufficient disk space for data (recommended: 50GB+)
-
-### Installation Steps
-
-1. **📥 Clone the repository**
-   ```bash
-   git clone https://github.com/LivXue/SoMe.git
-   cd SoMe
-   ```
-
-2. **📦 Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **📥 Download test data**
-   - Hugging Face Dataset: [Download Link](https://huggingface.co/datasets/LivXue/SoMe)
-   - Google Drive: [Download Link](https://drive.google.com/file/d/1sD2EaZStK5nODQWlJTHZ8WfFb5QHgwMN/view?usp=drive_link)  
-   - Baidu Disk: [Download Link](https://pan.baidu.com/s/1DugTyLR5AaQHeOdXG6wqQQ?pwd=SoMe) (Password: SoMe)
-   
-   After downloading, unzip the data into the `database` directory.
+- Type: tool policy parameter ablation.
+- Change: add `--retrieval_topk` in `test_misinformation_detection.py` and constrain `knowledge_retrieve` topk in the query instruction.
+- Controlled variables: same sample size (200), same scoring pipeline, same retry strategy; only retrieval policy changed.
 
 ---
 
-## 💻 Usage
+## 6. Results
 
-### 🏃‍♂️ Running Individual Tasks
+| Setting | Model | Samples | ACC |
+|---|---|---:|---:|
+| Baseline | gpt-4o-mini | 200 | 52.0 |
+| Modified (topk=5) | gpt-4o-mini | 200 | 52.5 |
+| Baseline | gemini-2.5-flash | 200 | 55.5 |
+| Modified (topk=5) | gemini-2.5-flash | 200 | 51.5 |
+| Baseline | kimi-k2-instruct | 200 | 55.0 |
+| Modified (topk=5) | kimi-k2-instruct | 200 | 54.0 |
 
-Each task can be evaluated using its corresponding test script:
-
-```bash
-# 🚨 Realtime Event Detection
-python test_realtime_event_detection.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 📊 Streaming Event Summary
-python test_streaming_event_summary.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 🚫 Misinformation Detection
-python test_misinformation_detection.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 🎯 User Behavior Prediction
-python test_user_behavior_prediction.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 😊 User Emotion Analysis
-python test_user_emotion_analysis.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 💬 User Comment Simulation
-python test_user_comment_simulation.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# 📱 Media Content Recommendation
-python test_media_content_recommend.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-
-# ❓ Social Media Question Answering
-python test_social_media_question_answering.py --model MODEL_NAME --base_url MODEL_SERVER_URL --api_key API_KEY
-```
-
-### ⚙️ Command Line Arguments
-
-| Argument | Description | Example |
-|----------|-------------|---------|
-| `--model` | The model name to use | "deepseek-chat" |
-| `--base_url` | The base URL for the model server | "https://api.deepseek.com" |
-| `--api_key` | The API key for the model server | Your actual API key |
-| `--output_path` | Output path for results | "results/my_experiment" |
-
-### 📊 Evaluation
-
-After running the test scripts, evaluate the results using the provided evaluation scripts:
-
-```bash
-# Option 1: For tasks with LLM-based answer extraction
-python eval_scripts/[TASK]_extraction.py
-python eval_scripts/[TASK]_compute_score.py
-
-# Option 2: For tasks with LLM-as-judge scoring
-python eval_scripts/[TASK]_scoring.py
-python eval_scripts/[TASK]_compute_score.py
-```
-
-> **Note**: The LLM settings for evaluation are configured in `eval_scripts/settings.json`
+Reference values from paper Table 3 (MID):
+- GPT-4o: 50.24
+- Gemini-2.5-Flash: 45.62
+- Kimi-K2-Instruct: 47.83
+- DeepSeek-V3: 51.00
 
 ---
 
-## 🧠 Model Support
+## 7. Discussion
 
-The benchmark supports various LLM models through OpenAI-compatible API endpoints:
+1. **Model-specific sensitivity to retrieval constraints**
+   - `gpt-4o-mini`: `52.0 -> 52.5` (slight gain)
+   - `gemini-2.5-flash`: `55.5 -> 51.5` (clear drop)
+   - `kimi-k2-instruct`: `55.0 -> 54.0` (moderate drop)
 
-- 🧩 **Qwen series models** (Qwen2.5, Qwen3, etc.)
-- 🔌 **OpenAI models** (GPT-4, GPT-5, etc.)
-- 🌐 **Third-party models** with OpenAI-compatible APIs (DeepSeek, Claude, etc.)
-- 📦 **Local models** served with OpenAI-compatible wrappers (vLLM, Ollama, etc.)
+2. **No universally best topk**
+   The same retrieval constraint behaves differently across models, suggesting interaction between retrieval policy and model-specific reasoning/tool-use behavior. Retrieval hyperparameters should be tuned per model.
 
----
-
-## 📚 Citation
-
-If you use this benchmark in your research, please cite our paper:
-
-```bibtex
-@inproceedings{some2026,
-  title={SoMe: A Realistic Benchmark for LLM-based Social Media Agents},
-  author={Dizhan Xue and Jing Cui and Shengsheng Qian and Chuanrui Hu and Changsheng Xu},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  year={2026}
-}
-```
+3. **Potential noise sources**
+   - Non-identical model/provider setup vs paper
+   - Subset (200) vs full set (1451)
+   - Occasional API 502 instability, partially mitigated by retry/fallback extraction
 
 ---
 
-## 🤝 Contributing
+## 8. Key Code Fixes to Original Repo (Summary)
 
-We welcome contributions to improve the benchmark! Here's how you can help:
-
-1. **🐛 Report bugs** by opening issues with detailed descriptions
-2. **💡 Suggest features** for new tasks or improvements
-3. **🔧 Submit code** via pull requests for bug fixes or enhancements
-4. **📊 Add datasets** to expand the benchmark coverage
-5. **📝 Improve documentation** for better usability
-
-Please see our [Contributing Guidelines](CONTRIBUTING.md) for more details.
-
----
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Detailed log is in `REPRO_LOG.md`. Main fixes include:
+- argparse and interrupt handling in `test_misinformation_detection.py`
+- syntax/import repairs across scripts
+- missing module bridge (`qwen_agent/llm/oai.py`)
+- eval script fixes for argparse/settings parsing
+- robust extraction fallback + retry for 502s
+- extraction output persistence fix (indentation bug)
+- speed-control and ablation parameters (`max_samples`, `max_retries`, `retrieval_topk`)
 
 ---
 
-## 🙏 Acknowledgments
+## 9. Conclusion
 
-We would like to express our gratitude to:
-
-- The **Qwen team** for their excellent Qwen-Agent framework, which forms the foundation of this benchmark
-- All contributors who have helped develop and improve SoMe
-- The social media platforms and data providers that make this research possible
-- The AAAI 2026 reviewers for their valuable feedback
-
----
-
-## 📞 Contact
-
-For questions or inquiries about the benchmark, please contact:
-
-- Dizhan Xue: xuedizhan17@mails.ucas.ac.cn
-
-Visit our [GitHub repository](https://github.com/LivXue/SoMe) for the latest updates and discussions.
+- The MID pipeline is successfully reproduced end-to-end on a practical subset.
+- Baseline + modification + multi-model extension are all completed with measurable outputs.
+- Retrieval policy is not model-agnostic; its effect can reverse across models.
+- Results are reproducible under this setup, with full debugging trace available in `REPRO_LOG.md`.
