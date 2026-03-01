@@ -6,9 +6,7 @@ models/*
 openai_agent/*
 openai_tools/*
 question_generation/*
-results/*
 results_newly/*
-scores/*
 utils/*
 test_API*
 *classification*

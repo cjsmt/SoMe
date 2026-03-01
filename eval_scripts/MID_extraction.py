@@ -2,18 +2,22 @@ import json
 import os
 import re
 import argparse
+from time import sleep
+from types import SimpleNamespace
 
 from tqdm import tqdm
 from openai import OpenAI
 
 
 args = argparse.ArgumentParser()
-args.add_argument('--result_path', type=str, default='results/misinformation_detection', description='Path to the result files')
-args.add_argument('--output_path', type=str, default='scores/misinformation_detection', description='Path to the output files')
-args.add_argument('--setting_path', type=str, default='eval_scripts/settings.json', description='Path to the setting file')
+args.add_argument('--result_path', type=str, default='results/misinformation_detection', help='Path to the result files')
+args.add_argument('--output_path', type=str, default='scores/misinformation_detection', help='Path to the output files')
+args.add_argument('--setting_path', type=str, default='eval_scripts/settings.json', help='Path to the setting file')
+args.add_argument('--api_retry', type=int, default=3, help='Retry times for extraction API failures')
 args = args.parse_args()
 
-settings = json.load(open(args.setting_path, 'r'))
+settings = SimpleNamespace(**json.load(open(args.setting_path, 'r')))
+os.makedirs(args.output_path, exist_ok=True)
 
 def remove_think_tags(text):
     # 使用正则表达式匹配<think>到</think>之间的内容，并将其替换为空字符串
@@ -29,6 +33,16 @@ def class_projection(category: str):
         return "true"
     else:
         return "error"
+
+
+def try_rule_extract(raw_text: str) -> str:
+    text = remove_think_tags(raw_text).lower()
+    # Prefer longer labels first to avoid substring conflicts.
+    ordered_labels = ["pants-fire", "mostly-true", "barely-true", "half-true", "false", "true"]
+    for label in ordered_labels:
+        if re.search(rf"\b{re.escape(label)}\b", text):
+            return label
+    return "error"
 
 en_prompt = '''
     Please read the provided text carefully and extract the final verdict indicating whether the given tweet contains any misinformation. The result must be one of the following: "pants-fire", "false", "barely-true", "half-true", "mostly-true", or "true". Do not provide any explanations or additional content.
@@ -69,26 +83,38 @@ for file_path in tqdm(os.listdir(args.result_path)):
     for json_name, samples in tqdm(raw_data.items()):
         if json_name in results:
             continue
-        if samples in ["pants-fire", "false", "barely-true", "half-true", "mostly-true", "true"]:
+        if samples in ["pants-fire", "false", "barely-true", "half-true", "mostly-true", "true", "error"]:
             results[json_name] = class_projection(samples)
+            continue
+        rule_answer = try_rule_extract(samples)
+        if rule_answer != "error":
+            results[json_name] = class_projection(rule_answer)
             continue
         
         query = f"the provided text is “{samples}”"
-        while True:
-            chat_response = client.chat.completions.create(
-                        model=settings.model,
-                        messages=[
-                            {"role": "system", "content": en_prompt},
-                            {"role": "user", "content": query},
-                        ],
-                    )
-            response = chat_response.choices[0].message.content
-            print(f"{samples}\n{response}\n")
-            answer = remove_think_tags(response).strip().strip('"')
-            if answer in ["pants-fire", "false", "barely-true", "half-true", "mostly-true", "true", "error"]:
-                results[json_name] = class_projection(answer)
-                break
+        success = False
+        for _ in range(args.api_retry):
+            try:
+                chat_response = client.chat.completions.create(
+                            model=settings.model,
+                            messages=[
+                                {"role": "system", "content": en_prompt},
+                                {"role": "user", "content": query},
+                            ],
+                        )
+                response = chat_response.choices[0].message.content
+                print(f"{samples}\n{response}\n")
+                answer = remove_think_tags(response).strip().strip('"').lower()
+                if answer in ["pants-fire", "false", "barely-true", "half-true", "mostly-true", "true", "error"]:
+                    results[json_name] = class_projection(answer)
+                    success = True
+                    break
+            except Exception as e:
+                print(f"API extraction failed for {json_name}: {e}")
+                sleep(2)
+        if not success:
+            results[json_name] = "error"
         
-    #print(json.dumps(results, ensure_ascii=False, indent=4))  
-        with open(output_file, "w", encoding="utf8") as f:
-            json.dump(results, f, ensure_ascii=False, indent=4)
+    # Persist one output file per model after finishing all samples.
+    with open(output_file, "w", encoding="utf8") as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)

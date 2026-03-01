@@ -1,28 +1,27 @@
-# SoMe MID Reproduction (FTEC5660)
+# SoMe MID 复现说明（中文）
 
-This repository is adapted from the original SoMe project for coursework reproducibility:
-- Original repo: `https://github.com/LivXue/SoMe`
-- This fork/reproduction repo: `https://github.com/<your-username>/SoMe`
+本仓库基于 SoMe 原仓库进行课程复现实验改造：
+- 原始仓库：`https://github.com/LivXue/SoMe`
+- 本人复现仓库：`https://github.com/<your-username>/SoMe`
 
-For the assignment report, see:
-- `REPORT_EN.md`
+作业报告见：
 - `REPORT_CN.md`
+- `REPORT_EN.md`
 
-## 1) Scope
+## 1）复现范围
 
-This project reproduces one sub-experiment from SoMe:
-- Task: `MID` (Misinformation Detection)
-- Metric: `ACC` (after extraction + compute score)
-- Controlled modification: retrieval policy (`--retrieval_topk`)
+本项目聚焦 SoMe 的一个子实验：
+- 任务：`MID`（虚假信息检测）
+- 指标：`ACC`（先 extraction，再 compute score）
+- 受控改动：`--retrieval_topk`
 
-## 2) Environment Setup
+## 2）环境安装
 
-### Prerequisites
+### 前置条件
 - Python 3.12
-- OpenAI-compatible API endpoint and key
-- Optional: conda environment
+- 可用的 OpenAI 兼容 API
 
-### Install
+### 安装命令
 
 ```bash
 python3 -m venv .venv
@@ -30,9 +29,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 3) Configuration
+## 3）配置 `.env`
 
-Create `.env` in repo root:
+在仓库根目录创建 `.env`：
 
 ```env
 OPENAI_API_KEY="YOUR_API_KEY"
@@ -42,14 +41,14 @@ LLM_MODEL_NAME="gpt-4o-mini"
 LLM_TEMPERATURE=0
 ```
 
-## 4) Data Preparation
+## 4）数据准备
 
-Place required MID files so scripts can read them:
+确保 MID 相关文件存在：
 - `datasets/misinformation_detection/ground_truth.json`
 - `database/knowledge_data/knowledge_base.json`
 - `database/emb_data/knowledge_base.npy`
 
-### Option A: Download only MID-required subset (recommended)
+### 方案 A：仅下载 MID 必需子集（推荐）
 
 ```bash
 python3 - <<'PY'
@@ -71,25 +70,25 @@ print("MID required data downloaded.")
 PY
 ```
 
-If your network is slow in your region, try:
+如果你所在地区网络较慢，可先设置镜像：
 
 ```bash
 export HF_ENDPOINT="https://hf-mirror.com"
 ```
 
-Then run the download command again.
+然后再次运行上述下载命令。
 
-### Option B: Download full package (original links)
+### 方案 B：下载完整数据包（官方链接）
 
-- Hugging Face: `https://huggingface.co/datasets/LivXue/SoMe`
-- Google Drive: `https://drive.google.com/file/d/1sD2EaZStK5nODQWlJTHZ8WfFb5QHgwMN/view?usp=drive_link`
-- Baidu Disk: `https://pan.baidu.com/s/1DugTyLR5AaQHeOdXG6wqQQ?pwd=SoMe` (pwd: `SoMe`)
+- Hugging Face：`https://huggingface.co/datasets/LivXue/SoMe`
+- Google Drive：`https://drive.google.com/file/d/1sD2EaZStK5nODQWlJTHZ8WfFb5QHgwMN/view?usp=drive_link`
+- 百度网盘：`https://pan.baidu.com/s/1DugTyLR5AaQHeOdXG6wqQQ?pwd=SoMe`（提取码：`SoMe`）
 
-After download, extract files into the project root so paths match the scripts.
+下载后请将文件解压到项目根目录，使脚本路径与文档保持一致。
 
-## 5) Run Experiments
+## 5）运行实验
 
-### A. Baseline (200 samples)
+### A. Baseline（200样本）
 
 ```bash
 set -a && source .env && set +a && python3 test_misinformation_detection.py \
@@ -98,7 +97,7 @@ set -a && source .env && set +a && python3 test_misinformation_detection.py \
   --max_retries 2
 ```
 
-### B. Modified (topk=5, 200 samples)
+### B. Modified（topk=5，200样本）
 
 ```bash
 set -a && source .env && set +a && python3 test_misinformation_detection.py \
@@ -108,19 +107,19 @@ set -a && source .env && set +a && python3 test_misinformation_detection.py \
   --retrieval_topk 5
 ```
 
-### C. One-click overnight run
+### C. 一键整夜运行
 
-Runs baseline + modified for model in `.env` (`LLM_MODEL_NAME`):
+按 `.env` 的 `LLM_MODEL_NAME` 自动跑 baseline + modified：
 
 ```bash
 bash run_mid_overnight.sh
 ```
 
-Output is namespaced by model and run tag, and will not overwrite old runs.
+脚本按模型名和时间戳分目录输出，默认不覆盖历史结果。
 
-## 6) Evaluate Results
+## 6）评估流程
 
-### Baseline evaluation
+### Baseline 评估
 
 ```bash
 python3 eval_scripts/MID_extraction.py \
@@ -134,7 +133,7 @@ cp scores/mid_run_01/*.json scores/misinformation_detection/
 python3 eval_scripts/MID_compute_score.py
 ```
 
-### Modified evaluation
+### Modified 评估
 
 ```bash
 python3 eval_scripts/MID_extraction.py \
@@ -147,9 +146,9 @@ cp scores/mid_run_mod_topk5/*.json scores/misinformation_detection/
 python3 eval_scripts/MID_compute_score.py
 ```
 
-## 7) Reproduced Results (200 samples)
+## 7）已复现结果（200样本）
 
-| Setting | Model | ACC |
+| 设置 | 模型 | ACC |
 |---|---|---:|
 | Baseline | gpt-4o-mini | 52.0 |
 | Modified (topk=5) | gpt-4o-mini | 52.5 |
@@ -158,8 +157,8 @@ python3 eval_scripts/MID_compute_score.py
 | Baseline | kimi-k2-instruct | 55.0 |
 | Modified (topk=5) | kimi-k2-instruct | 54.0 |
 
-## 8) Notes
+## 8）说明
 
-- Full debugging diary: `REPRO_LOG.md`
-- Do not commit secrets (especially `.env`)
-- This repo focuses on MID reproducibility subset, not full SoMe benchmark
+- 排障过程详见：`REPRO_LOG.md`
+- 请勿提交 `.env` 与任何密钥
+- 本仓库以 MID 子任务复现为主，不覆盖 SoMe 全任务全量复现
