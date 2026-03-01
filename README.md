@@ -5,7 +5,8 @@
 - Course: FTEC5660 Agentic AI for Business and FinTech
 - Name: ZHANG Xianglong
 - SID: 1155241554
-- Project Repo: `https://github.com/LivXue/SoMe`
+- Project Repo (my reproduction code): `https://github.com/csjmt/SoMe`
+- Original Repo (authors): `https://github.com/LivXue/SoMe`
 - Paper: *SoMe: A Realistic Benchmark for LLM-based Social Media Agents* (arXiv:2512.14720)
 - Reproduction Target: MID ACC (Table 3-related metric) + one controlled modification
 
