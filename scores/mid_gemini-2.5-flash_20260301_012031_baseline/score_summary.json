@@ -1,0 +1,8 @@
+[
+  {
+    "experiment": "mid_gemini-2.5-flash_20260301_012031_baseline",
+    "file": "gemini-2.5-flash.json",
+    "samples": 200,
+    "acc": 55.5
+  }
+]

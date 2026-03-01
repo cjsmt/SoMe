@@ -1,0 +1,8 @@
+[
+  {
+    "experiment": "mid_kimi-k2-instruct_20260301_060931_baseline",
+    "file": "kimi-k2-instruct.json",
+    "samples": 200,
+    "acc": 55.0
+  }
+]
